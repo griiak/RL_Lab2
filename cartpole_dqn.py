@@ -117,7 +117,7 @@ class DQNAgent:
             if done[i]:
                 target[i][action[i]] = reward[i]
             else:
-                target[i][action[i]] = reward[i] + self.discount_factor * np.max(target_val[i][action[i]])
+                target[i][action[i]] = reward[i] + self.discount_factor * np.max(target_val[i])
 ###############################################################################
 ###############################################################################
 
