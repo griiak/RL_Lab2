@@ -15,8 +15,8 @@ EPISODES = 1000 #Maximum number of episodes
 class DQNAgent:
     #Constructor for the agent (invoked when DQN is first called in main)
     def __init__(self, state_size, action_size):
-        self.check_solve = False	#If True, stop if you satisfy solution confition
-        self.render = False        #If you want to see Cartpole learning, then change to True
+        self.check_solve = False    #If True, stop if you satisfy solution confition
+        self.render = True         #If you want to see Cartpole learning, then change to True
 
         #Get size of state and action
         self.state_size = state_size
@@ -75,7 +75,10 @@ class DQNAgent:
         #Insert your e-greedy policy code here
         #Tip 1: Use the random package to generate a random action.
         #Tip 2: Use keras.model.predict() to compute Q-values from the state.
-        action = random.randrange(self.action_size)
+        if random.random() < 0.02:
+            action = random.randrange(self.action_size)
+        else:
+            action = np.argmax(self.model.predict(state))
         return action
 ###############################################################################
 ###############################################################################
@@ -111,7 +114,10 @@ class DQNAgent:
         #Tip 1: Observe that the Q-values are stored in the variable target
         #Tip 2: What is the Q-value of the action taken at the last state of the episode?
         for i in range(self.batch_size): #For every batch
-            target[i][action[i]] = random.randint(0,1)
+            if done[i]:
+                target[i][action[i]] = reward[i]
+            else:
+                target[i][action[i]] = reward[i] + self.discount_factor * target_val[i][action[i]]
 ###############################################################################
 ###############################################################################
 
@@ -119,6 +125,7 @@ class DQNAgent:
         self.model.fit(update_input, target, batch_size=self.batch_size,
                        epochs=1, verbose=0)
         return
+
     #Plots the score per episode as well as the maximum q value per episode, averaged over precollected states.
     def plot_data(self, episodes, scores, max_q_mean):
         pylab.figure(0)
@@ -142,6 +149,8 @@ if __name__ == "__main__":
     #Get state and action sizes from the environment
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
+
+    print(state_size)
 
     #Create agent, see the DQNAgent __init__ method for details
     agent = DQNAgent(state_size, action_size)
